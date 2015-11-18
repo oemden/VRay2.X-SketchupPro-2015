@@ -9,16 +9,14 @@
 VraySketchupPlugin_PATH="/Library/Application Support/Google SketchUp 2015/SketchUp"
 TEMP_FOLDER="/tmp/VRAY2XSKETCHUP"
 
-
 function list_users {
-	#Only for standard Users in /Users
-	#later get Users from dscl
+	# Thanks to errofreeit for user listing code....
+	# Only for standard Users in /Users - get Users from dscl.... maybe later
 	export EXCLUDE=( "shared" "guest" "deleted users" ".localized" )
 	for u in "/Users"/*/;
 	do
 		# Change the account name to lowercase
     	USERZ=$(basename "$u"| tr '[:upper:]' '[:lower:]');
-    	
    		# Set keep variable
 		keep=1;
     	for x in "${EXCLUDE[@]}";
@@ -40,29 +38,26 @@ function copy_Vray_srv_licence_xml {
 	echo
 	echo "creating $SKETCHUP_VRAY_LICENCESRV_XML"
 	mkdir -p "$SKETCHUP_VRAY_LICENCESRV_XML"
-	
 	cp -a "$TEMP_FOLDER"/"ChaosGroup_xml_srv"/*.xml "$SKETCHUP_VRAY_LICENCESRV_XML"/
 	chown -R "$USERZ" "$SKETCHUP_VRAY_LICENCESRV_XML"
 	chgrp -R "staff" "$SKETCHUP_VRAY_LICENCESRV_XML"
-
-	ls -lh "$SKETCHUP_VRAY_LICENCESRV_XML"
-	ls -lh "$SKETCHUP_VRAY_LICENCESRV_XML"/*
+	#ls -lh "$SKETCHUP_VRAY_LICENCESRV_XML"
+	#ls -lh "$SKETCHUP_VRAY_LICENCESRV_XML"/*
 }
 
 function install_VRay_Plugin {
-
 	cd "$TEMP_FOLDER"/MacOs/
-
-	#./"V-Ray for SketchUp adv" ./osx-intel --unattendedmodeui none --debuglevel 0 --mode unattended --installer-language fr --install_dir_osx "/Library/Application Support/Google SketchUp 2015/SketchUp" --enable-components "VfS,RenderSpawner,DistributedRendering,Tools" --disable-components "WIBU,VRayLicenseServer"
-	./"V-Ray for SketchUp adv" ./osx-intel --unattendedmodeui none --mode unattended --installer-language fr --install_dir_osx "/Library/Application Support/Google SketchUp 2015/SketchUp" --enable-components "VfS,RenderSpawner,DistributedRendering,Tools" --disable-components "WIBU,VRayLicenseServer"
-
-	echo "installing" Vray Plugin.
-	
+	##Let's Check Sketchup First
+	if [[ -d "${VraySketchupPlugin_PATH}" ]] ; then
+		./"V-Ray for SketchUp adv" ./osx-intel --unattendedmodeui none --mode unattended --installer-language fr --install_dir_osx "${VraySketchupPlugin_PATH}" --enable-components "VfS,RenderSpawner,DistributedRendering,Tools" --disable-components "WIBU,VRayLicenseServer"
+		echo "installing" Vray Plugin.
+	else
+		echo "no Sketchup 2015 target directory, exiting now"
+		exit 1
+	fi
 }
 
-
 function CleanUp {
-
 	cd /
 	rm -Rf "$TEMP_FOLDER"
 }
